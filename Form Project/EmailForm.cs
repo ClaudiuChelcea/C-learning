@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -40,7 +40,11 @@ namespace EmailForm
         {
             try
             {
-                int index = dataGridView1.CurrentCell.RowIndex;
+                int index = -1;
+                if (dataGridView1.CurrentCell != null)
+                    index = dataGridView1.CurrentCell.RowIndex;
+                else
+                    throw new Exception();
                 if (index > -1)
                 {
                     my_data.Rows[index].Delete();
@@ -62,7 +66,11 @@ namespace EmailForm
         {
             try
             {
-                int index = dataGridView1.CurrentCell.RowIndex;
+                int index = -1;
+                if (dataGridView1.CurrentCell != null)
+                    index = dataGridView1.CurrentCell.RowIndex;
+                else
+                    throw new Exception();
                 if (index > -1)
                 {
                     textBox1.Text = my_data.Rows[index].ItemArray[0].ToString();
