@@ -5,12 +5,13 @@ using Tools;
 
 namespace Program
 {
-    class MainProgram
+    sealed class MainProgram
     {
         private static void Main()
         {
-            // Tools.Debug.Test_OUTPUT();
-            Console.WriteLine("Scan 3 users:\n");
+            Tools.Debug.Test_OUTPUT();
+
+            Console.WriteLine("Scan 3 users.\n");
 
             // Initialise user's list
             SuperUser root = new SuperUser();
@@ -20,16 +21,35 @@ namespace Program
                 root.add_user();
 
             // Display the 3 users
-            SuperUser.display_users();
+            root.display_users();
 
             // Remove one of the users
+            Console.WriteLine("===================");
             Console.WriteLine("Remove first user:");
             User first_user = root.get_first_user();
             root.remove_user(first_user);
 
             // Display the remaining users
-            Console.WriteLine("Users left:");
-            SuperUser.display_users();
+            Console.WriteLine("\nUsers left:");
+            root.display_users();
+
+            // Clear users
+            Console.WriteLine("===================");
+            Console.WriteLine("Removing all users, adding guest users...");
+            while (root.my_users.Count > 0)
+                root.remove_user(root.get_first_user());
+            Console.WriteLine("\nCheck if list is empty:");
+            root.display_users();
+
+            // Add guest users
+            Console.WriteLine("\nAdd 3 guest users");
+            for (int i = 0; i < 3; i++)
+                root.add_guest();
+            Console.WriteLine("Displaying guests...");
+            root.display_guests();
+            Console.WriteLine("\nCleaning guests...");
+            while (root.my_guests.Count > 0)
+                root.remove_guest(root.get_first_guest());
         }
     }
 
@@ -69,19 +89,17 @@ namespace Program
         }
 
         // Scan user
-        public void ReadUser()
+        public virtual void ReadUser()
         {
             // Get name
             Console.Write("Name: ");
             this.Name = Console.ReadLine();
-            Console.WriteLine();
 
             // Get age
             Console.Write("Age: ");
             try
             {
                 this.Age = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine();
             }
             catch (Exception my_exception)
             {
@@ -93,7 +111,6 @@ namespace Program
             // Get gender
             Console.Write("Gender (male | female | other): ");
             this.Gender = Console.ReadLine();
-            Console.WriteLine();
 
             // Check input
             if (check_input(this.Name, this.Age, this.Gender) == false)
@@ -101,7 +118,7 @@ namespace Program
         }
 
         // Check if the user is valid
-        private bool check_input(string Name = "N/A", int Age = -1, string Gender = "N/A")
+        public virtual bool check_input(string Name = "N/A", int Age = -1, string Gender = "N/A")
         {
             if (Name.Length < 4)
             {
@@ -129,11 +146,43 @@ namespace Program
         }
     }
 
+    // Guest
+    public class Guest : User
+    {
+        // Scan guest
+        public override void ReadUser()
+        {
+            // Get name
+            Console.Write("Name: ");
+            this.Name = Console.ReadLine();
+
+            // Check input
+            if (check_input(this.Name, this.Age, this.Gender) == false)
+                ReadUser();
+        }
+
+        // Check if the guest is valid
+        public override bool check_input(string Name = "N/A", int Age = -1, string Gender = "N/A")
+        {
+            if (Name.Length < 4)
+            {
+                Console.WriteLine("Insert a longer name!\n");
+                return false;
+            }
+
+            Console.WriteLine("Scanned guest succesfully!\n");
+            return true;
+        }
+    }
+
     // Advanced user
     public class SuperUser : User
     {
         // Hold a list of the current users
-        public static List<User> my_users = new List<User>();
+        public List<User> my_users = new List<User>();
+
+        // Hold a list of the current guest users
+        public List<Guest> my_guests = new List<Guest>();
 
         // Add user
         public void add_user()
@@ -153,13 +202,18 @@ namespace Program
                 my_users.Remove(user_to_remove);
             }
 
-            Console.WriteLine($"Removed first user. His name was {user_name}\n");
+            Console.WriteLine($"Removed first user. His name was {user_name}");
         }
 
         // Show the users
-        public static void display_users()
+        public void display_users()
         {
             var list = my_users.Select(el => el);
+            if (list.Count() == 0)
+            {
+                Console.WriteLine("No users!");
+                return;
+            }
             foreach (var user in list)
             {
                 Console.WriteLine($"UserName: {user.Name}\nAge: {user.Age}\nGender: {user.Gender}\n");
@@ -172,6 +226,49 @@ namespace Program
             var list = my_users.Select(el => el);
             return list.First<User>();
         }
+
+        // Add guest
+        public void add_guest()
+        {
+            Guest my_guest = new Guest();
+            my_guest.ReadUser();
+            my_guests.Add(my_guest);
+        }
+
+        // Remove guest
+        public void remove_guest(Guest guest_to_remove)
+        {
+            string guest_name = "";
+            while (my_guests.Contains(guest_to_remove))
+            {
+                guest_name = guest_to_remove.Name;
+                my_guests.Remove(guest_to_remove);
+            }
+
+            Console.WriteLine($"Removed first guest. His name was {guest_name}");
+        }
+
+        // Show the guests
+        public void display_guests()
+        {
+            var list = my_guests.Select(el => el);
+            if (list.Count() == 0)
+            {
+                Console.WriteLine("No guest users!");
+                return;
+            }
+            foreach (var guest in list)
+            {
+                Console.WriteLine($"UserName: {guest.Name}");
+            }
+        }
+
+        // Get first guest
+        public Guest get_first_guest()
+        {
+            var list = my_guests.Select(el => el);
+            return list.First<Guest>();
+        }
     }
 }
 
@@ -181,7 +278,7 @@ namespace Tools
     {
         public static void Test_OUTPUT()
         {
-            const string debug_Message = "Hello World!";
+            const string debug_Message = "==============================\n            START           \n==============================\n";
             System.Console.WriteLine($"{debug_Message}");
         }
     }
